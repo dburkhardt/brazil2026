@@ -432,6 +432,7 @@ def render_logistics(days: list[DayPlan]) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Logistics · Rio de Janeiro</title>
   <meta name="description" content="Flights to and from Rio de Janeiro for April 2026.">
+  <link rel="icon" href="{FAVICON_HREF}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
@@ -498,7 +499,7 @@ def render_logistics(days: list[DayPlan]) -> str:
     </section>
 
     <section class="logistics-grid">
-      <article class="detail-card flight-card reveal">
+      <article class="detail-card flight-card logistics-span reveal">
         <div class="eyebrow">YYZ -> GIG</div>
         <h2>Outbound options</h2>
         <div class="table-wrap">
