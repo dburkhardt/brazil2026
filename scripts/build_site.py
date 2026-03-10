@@ -9,6 +9,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "slides.html"
 STYLESHEET = "styles.css"
+FAVICON_HREF = (
+    "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 "
+    "viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E"
+    "%F0%9F%87%A7%F0%9F%87%B7%3C/text%3E%3C/svg%3E"
+)
 
 
 @dataclass
@@ -26,6 +31,19 @@ class DayPlan:
         return f"day-{self.number}.html"
 
 
+@dataclass
+class FlightOption:
+    airline: str
+    route: str
+    depart_date: str
+    depart_time: str
+    arrive_date: str
+    arrive_time: str
+    duration: str
+    points: str
+    featured: bool = False
+
+
 SUMMARIES = {
     1: "A soft landing day built around the Sheraton, a golden-hour walk through Ipanema, and sunset at Arpoador.",
     2: "A green, low-key Rio day with the botanical garden in the morning and the Lagoa shoreline in the afternoon.",
@@ -34,6 +52,19 @@ SUMMARIES = {
     5: "Classic Rio views in the morning, one last beach block in the afternoon, and music in Lapa at night.",
     6: "A short farewell morning with sunrise, coffee, checkout, and the return flight back to Toronto.",
 }
+
+OUTBOUND_FLIGHTS = [
+    FlightOption("Air Transat", "YYZ -> YUL -> GIG", "Thu Apr 16", "15:30", "Fri Apr 17", "06:30", "14h", "121,500 Chase", True),
+    FlightOption("Avianca (Chase)", "YYZ -> BOG -> GIG", "Thu Apr 16", "08:55", "Thu Apr 16", "~23:30", "14h 35m", "101,870 Chase"),
+    FlightOption("Avianca (Aeroplan)", "YYZ -> BOG -> GIG", "Thu Apr 16", "08:55", "Thu Apr 16", "~23:30", "14h 35m", "40K Aeroplan + $119"),
+    FlightOption("Copa", "YYZ -> PTY -> GIG", "Thu Apr 16", "~10:00", "Thu Apr 16", "~midnight", "14h 55m", "127,520 Chase"),
+    FlightOption("American", "YYZ -> MIA -> GIG", "Thu Apr 16", "~07:00", "Thu Apr 16", "~20:30", "13h 21m", "131,296 Chase"),
+]
+
+RETURN_FLIGHTS = [
+    FlightOption("Air Transat TS273", "GIG -> YYZ nonstop", "Wed Apr 22", "09:10", "Wed Apr 22", "19:10", "11h", "106,900 Chase", True),
+    FlightOption("Avianca via BOG", "GIG -> BOG -> YYZ", "Wed Apr 22", "16:40", "Thu Apr 23", "07:20", "15h 40m", "101,880 Chase"),
+]
 
 
 CAPTIONS = {
@@ -129,6 +160,26 @@ def merge_images(
     return [src for src, _ in trimmed], [caption for _, caption in trimmed]
 
 
+def flight_rows(options: list[FlightOption]) -> str:
+    rows = []
+    for option in options:
+        row_class = ' class="featured"' if option.featured else ""
+        airline = f"<strong>{html.escape(option.airline)}</strong>" if option.featured else html.escape(option.airline)
+        rows.append(
+            f"""
+          <tr{row_class}>
+            <td>{airline}</td>
+            <td>{html.escape(option.route)}</td>
+            <td><span class="flight-date">{html.escape(option.depart_date)}</span><span class="flight-time">{html.escape(option.depart_time)}</span></td>
+            <td><span class="flight-date">{html.escape(option.arrive_date)}</span><span class="flight-time">{html.escape(option.arrive_time)}</span></td>
+            <td>{html.escape(option.duration)}</td>
+            <td>{html.escape(option.points)}</td>
+          </tr>
+"""
+        )
+    return "".join(rows)
+
+
 def extract_days(text: str) -> list[DayPlan]:
     hotel_images = extract_hotel_images(text)
     blocks = re.findall(
@@ -183,11 +234,15 @@ def extract_days(text: str) -> list[DayPlan]:
     return days
 
 
-def nav_links(days: list[DayPlan], current: int | None = None) -> str:
+def nav_links(days: list[DayPlan], current_page: str | None = None) -> str:
     links = ['<a href="index.html" class="nav-home">Rio 2026</a>']
+    logistics_classes = "day-link"
+    if current_page == "logistics":
+        logistics_classes += " active"
+    links.append(f'<a href="logistics.html" class="{logistics_classes}">Logistics</a>')
     for day in days:
         classes = "day-link"
-        if current == day.number:
+        if current_page == f"day-{day.number}":
             classes += " active"
         links.append(f'<a href="{day.filename}" class="{classes}">Day {day.number}</a>')
     return "\n".join(links)
@@ -225,6 +280,7 @@ def render_index(days: list[DayPlan]) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Rio de Janeiro · April 2026</title>
   <meta name="description" content="Rio de Janeiro, April 17 to 22, 2026.">
+  <link rel="icon" href="{FAVICON_HREF}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
@@ -233,7 +289,7 @@ def render_index(days: list[DayPlan]) -> str:
 <body class="site-home">
   <header class="site-nav">
     <nav>
-      {nav_links(days)}
+      {nav_links(days, current_page="home")}
     </nav>
   </header>
 
@@ -291,6 +347,7 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(day.theme)} · Rio de Janeiro</title>
   <meta name="description" content="{html.escape(day.summary)}">
+  <link rel="icon" href="{FAVICON_HREF}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
@@ -299,7 +356,7 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
 <body class="site-day">
   <header class="site-nav">
     <nav>
-      {nav_links(days, current=day.number)}
+      {nav_links(days, current_page=f"day-{day.number}")}
     </nav>
   </header>
 
@@ -363,10 +420,161 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
 """
 
 
+def render_logistics(days: list[DayPlan]) -> str:
+    hero_image = html.escape(days[3].images[0])
+    outbound_rows = flight_rows(OUTBOUND_FLIGHTS)
+    return_rows = flight_rows(RETURN_FLIGHTS)
+
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logistics · Rio de Janeiro</title>
+  <meta name="description" content="Flights to and from Rio de Janeiro for April 2026.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{STYLESHEET}">
+</head>
+<body class="site-day">
+  <header class="site-nav">
+    <nav>
+      {nav_links(days, current_page="logistics")}
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero hero-day reveal">
+      <div class="hero-copy">
+        <div class="eyebrow">Logistics · Apr 16-23, 2026</div>
+        <h1>Flights</h1>
+        <p>Toronto out on Thu Apr 16. Rio home on Wed Apr 22, with one same-day return and one overnight option that lands Thu Apr 23.</p>
+        <div class="hero-actions">
+          <a href="#outbound" class="btn-primary">Outbound</a>
+          <a href="#return" class="btn-secondary">Return</a>
+        </div>
+      </div>
+      <div class="hero-panel">
+        <img src="{hero_image}" alt="Rio coastline">
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <article class="detail-card reveal" id="overview">
+        <div class="eyebrow">Timing</div>
+        <h2>Key windows</h2>
+        <ul class="detail-list">
+          <li>Outbound departs Toronto on Thu Apr 16 and reaches Rio on Fri Apr 17.</li>
+          <li>Air Transat return departs Rio on Wed Apr 22 and lands in Toronto on Wed Apr 22.</li>
+          <li>Avianca return departs Rio on Wed Apr 22 and lands in Toronto on Thu Apr 23 at 7:20 AM.</li>
+          <li>Hotel stay runs five nights, Apr 17 through Apr 22.</li>
+        </ul>
+      </article>
+
+      <aside class="detail-card reveal accent-card">
+        <div class="eyebrow">Return Call</div>
+        <h2>Apr 22 vs Apr 23 arrival</h2>
+        <p>Air Transat gets everyone home the same night. Avianca lands the next morning, Thu Apr 23, which keeps the Boston connection in play.</p>
+        <div class="stat-row">
+          <span class="stat-label">Outbound</span>
+          <strong>{len(OUTBOUND_FLIGHTS)} options</strong>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Return</span>
+          <strong>{len(RETURN_FLIGHTS)} options</strong>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Stay</span>
+          <strong>5 nights</strong>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section-head reveal" id="outbound">
+      <div class="eyebrow">Thu Apr 16 -> Fri Apr 17</div>
+      <h2>Outbound</h2>
+      <p>Toronto to Rio, with Air Transat highlighted and the Chase and Aeroplan alternatives still on the board.</p>
+    </section>
+
+    <section class="logistics-grid">
+      <article class="detail-card flight-card reveal">
+        <div class="eyebrow">YYZ -> GIG</div>
+        <h2>Outbound options</h2>
+        <div class="table-wrap">
+          <table class="flight-table">
+            <thead>
+              <tr>
+                <th>Airline</th>
+                <th>Route</th>
+                <th>Departs</th>
+                <th>Arrives</th>
+                <th>Duration</th>
+                <th>Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              {outbound_rows}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="section-head reveal" id="return">
+      <div class="eyebrow">Wed Apr 22 -> Thu Apr 23</div>
+      <h2>Return</h2>
+      <p>One option lands back in Toronto on Wed Apr 22. The other lands on Thu Apr 23 at 7:20 AM.</p>
+    </section>
+
+    <section class="logistics-grid">
+      <article class="detail-card flight-card reveal">
+        <div class="eyebrow">GIG -> YYZ</div>
+        <h2>Return options</h2>
+        <div class="table-wrap">
+          <table class="flight-table">
+            <thead>
+              <tr>
+                <th>Airline</th>
+                <th>Route</th>
+                <th>Departs</th>
+                <th>Arrives</th>
+                <th>Duration</th>
+                <th>Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              {return_rows}
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <aside class="detail-card reveal">
+        <div class="eyebrow">Decision</div>
+        <h2>Which should we book?</h2>
+        <ul class="detail-list">
+          <li>If Emilie works Boston on Fri Apr 24 only: Air Transat TS273. Home the same night on Wed Apr 22.</li>
+          <li>If Emilie needs Boston on Thu Apr 23: Avianca via BOG. Lands Thu Apr 23 at 7:20 AM with time to connect onward.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="pager">
+      <a href="index.html" class="pager-link">Rio</a>
+      <a href="{days[0].filename}" class="pager-link">Day 1</a>
+    </section>
+  </main>
+</body>
+</html>
+"""
+
+
 def main() -> None:
     text = SOURCE.read_text(encoding="utf-8")
     days = extract_days(text)
     (ROOT / "index.html").write_text(render_index(days), encoding="utf-8")
+    (ROOT / "logistics.html").write_text(render_logistics(days), encoding="utf-8")
     for day in days:
         (ROOT / day.filename).write_text(render_day(days, day), encoding="utf-8")
 
