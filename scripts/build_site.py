@@ -45,8 +45,92 @@ CAPTIONS = {
     6: ["Final Rio sunrise"],
 }
 
+MIN_GALLERY_IMAGES = {
+    1: 5,
+    2: 4,
+    3: 4,
+    4: 5,
+    5: 4,
+    6: 4,
+}
+
+DAY_HOTEL_IMAGE_ORDER = {
+    1: [0, 1, 2, 3],
+    2: [1, 2, 0],
+    3: [0, 3, 1],
+    4: [2, 1],
+    5: [2, 0, 1],
+    6: [3, 0, 1],
+}
+
+DAY_ORIGINAL_CAPTION_EXCLUDES = {
+    4: {"Arraial do Cabo coast", "Clear-water cove"},
+}
+
+DAY_FEATURED_IMAGES = {
+    4: [
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Vista_Arraial_do_Cabo.jpg",
+            "Praia do Forno overlook",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Gruta_Arraial_do_Cabo.jpg",
+            "Arraial sea cave",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Atlantic_ocean_view_Arraial_do_Cabo.JPG",
+            "Atlantic coast in Arraial do Cabo",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Praia_do_Farol_-_Arraial_do_cabo.JPG",
+            "Praia do Farol waters",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Prainha_Arraial_do_Cabo.jpg",
+            "Prainha shoreline",
+        ),
+    ],
+}
+
+
+def extract_hotel_images(text: str) -> list[tuple[str, str]]:
+    block_match = re.search(r'<div class="photo-grid">(.*?)</div>\s*<div class="bonvoy-strip">', text, re.S)
+    if not block_match:
+        return []
+
+    return [
+        (src, html.unescape(caption).strip())
+        for src, caption in re.findall(
+            r'<img src="([^"]+)" alt="[^"]+">\s*<div class="caption">(.*?)</div>',
+            block_match.group(1),
+            re.S,
+        )
+    ]
+
+
+def merge_images(
+    image_pairs: list[tuple[str, str]],
+    extras: list[tuple[str, str]],
+    minimum: int,
+) -> tuple[list[str], list[str]]:
+    merged: list[tuple[str, str]] = []
+    seen: set[str] = set()
+
+    for src, caption in [*image_pairs, *extras]:
+        if src in seen:
+            continue
+        seen.add(src)
+        merged.append((src, caption))
+
+    if minimum > len(merged):
+        minimum = len(merged)
+
+    trimmed = merged[:minimum]
+    return [src for src, _ in trimmed], [caption for _, caption in trimmed]
+
 
 def extract_days(text: str) -> list[DayPlan]:
+    hotel_images = extract_hotel_images(text)
     blocks = re.findall(
         r"<!-- Day (\d+) -->(.*?)(?=(?:<!-- Day \d+ -->|</div>\s*<div class=\"scroll-hint\">))",
         text,
@@ -69,13 +153,29 @@ def extract_days(text: str) -> list[DayPlan]:
         if len(captions) < len(image_matches):
             captions = captions + [f"{theme} view {i}" for i in range(len(captions) + 1, len(image_matches) + 1)]
 
+        original_pairs = list(zip(image_matches, captions))
+        excluded_captions = DAY_ORIGINAL_CAPTION_EXCLUDES.get(number, set())
+        if excluded_captions:
+            original_pairs = [(src, caption) for src, caption in original_pairs if caption not in excluded_captions]
+
+        image_pairs = [*DAY_FEATURED_IMAGES.get(number, []), *original_pairs]
+        extra_pairs: list[tuple[str, str]] = []
+        for hotel_index in DAY_HOTEL_IMAGE_ORDER.get(number, []):
+            if hotel_index < len(hotel_images):
+                extra_pairs.append(hotel_images[hotel_index])
+        images, captions = merge_images(
+            image_pairs,
+            extra_pairs,
+            MIN_GALLERY_IMAGES.get(number, len(image_pairs)),
+        )
+
         days.append(
             DayPlan(
                 number=number,
                 label=label,
                 theme=theme,
                 summary=SUMMARIES[number],
-                images=image_matches,
+                images=images,
                 captions=captions,
                 bullets=bullets,
             )
