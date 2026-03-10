@@ -90,7 +90,6 @@ def nav_links(days: list[DayPlan], current: int | None = None) -> str:
         if current == day.number:
             classes += " active"
         links.append(f'<a href="{day.filename}" class="{classes}">Day {day.number}</a>')
-    links.append('<a href="slides.html" class="nav-ghost">Original Slides</a>')
     return "\n".join(links)
 
 
@@ -112,8 +111,7 @@ def render_index(days: list[DayPlan]) -> str:
             {bullets}
           </ul>
           <div class="card-meta">
-            <span>{len(day.images)} gallery image{'s' if len(day.images) != 1 else ''}</span>
-            <a href="{day.filename}">Open day page</a>
+            <a href="{day.filename}">View day {day.number}</a>
           </div>
         </div>
       </article>
@@ -125,8 +123,8 @@ def render_index(days: list[DayPlan]) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Rio 2026 Excursions</title>
-  <meta name="description" content="Rio 2026 excursion planner with one page per day and gallery views for each outing.">
+  <title>Rio 2026</title>
+  <meta name="description" content="Rio de Janeiro trip plan for April 17 to 22, 2026.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
@@ -143,14 +141,11 @@ def render_index(days: list[DayPlan]) -> str:
     <section class="hero hero-home reveal">
       <div class="hero-copy">
         <div class="eyebrow">Rio de Janeiro · Apr 17-22, 2026</div>
-        <h1>One page per day, with a gallery for every excursion.</h1>
-        <p>
-          This turns the original presentation into a small trip site: each day has its own page,
-          focused itinerary, and image gallery, while the original slide deck stays available as a backup view.
-        </p>
+        <h1>Rio, coast to forest.</h1>
+        <p>Sheraton mornings, Ipanema sunsets, Tijuca trails, Arraial do Cabo water, and a final sunrise before heading home.</p>
         <div class="hero-actions">
-          <a href="{days[0].filename}" class="btn-primary">Start with Day 1</a>
-          <a href="slides.html" class="btn-secondary">View original slides</a>
+          <a href="{days[0].filename}" class="btn-primary">Start with day 1</a>
+          <a href="#days" class="btn-secondary">See the week</a>
         </div>
       </div>
       <div class="hero-panel">
@@ -158,10 +153,10 @@ def render_index(days: list[DayPlan]) -> str:
       </div>
     </section>
 
-    <section class="section-head reveal">
-      <div class="eyebrow">Excursions</div>
-      <h2>Daily itinerary pages</h2>
-      <p>Each card opens a dedicated day page with the full plan and that day’s gallery.</p>
+    <section class="section-head reveal" id="days">
+      <div class="eyebrow">The Week</div>
+      <h2>Six days, one Rio trip</h2>
+      <p>Arrival by the beach, gardens and lagoa, a full rainforest day, Arraial do Cabo, classic city views, and one last early morning.</p>
     </section>
 
     <section class="excursion-grid">
@@ -215,8 +210,8 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
         <h1>{html.escape(day.theme)}</h1>
         <p>{html.escape(day.summary)}</p>
         <div class="hero-actions">
-          <a href="#gallery" class="btn-primary">Jump to gallery</a>
-          <a href="#plan" class="btn-secondary">Read the plan</a>
+          <a href="#plan" class="btn-primary">Highlights</a>
+          <a href="#gallery" class="btn-secondary">Photos</a>
         </div>
       </div>
       <div class="hero-panel">
@@ -226,20 +221,20 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
 
     <section class="content-grid">
       <article class="detail-card reveal" id="plan">
-        <div class="eyebrow">Daily plan</div>
-        <h2>What happens on this day</h2>
+        <div class="eyebrow">Highlights</div>
+        <h2>The flow of the day</h2>
         <ul class="detail-list">
           {bullet_items}
         </ul>
       </article>
 
       <aside class="detail-card reveal accent-card">
-        <div class="eyebrow">Quick read</div>
-        <h2>Why this day works</h2>
+        <div class="eyebrow">Rhythm</div>
+        <h2>{html.escape(day.label)}</h2>
         <p>{html.escape(day.summary)}</p>
         <div class="stat-row">
-          <span class="stat-label">Gallery</span>
-          <strong>{len(day.images)} image{'s' if len(day.images) != 1 else ''}</strong>
+          <span class="stat-label">Moments</span>
+          <strong>{len(day.images)} scene{'s' if len(day.images) != 1 else ''}</strong>
         </div>
         <div class="stat-row">
           <span class="stat-label">Stops</span>
@@ -249,9 +244,8 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
     </section>
 
     <section class="section-head reveal" id="gallery">
-      <div class="eyebrow">Gallery</div>
-      <h2>Images for {html.escape(day.theme)}</h2>
-      <p>Self-contained images carried over from the original trip deck.</p>
+      <div class="eyebrow">{html.escape(day.label)}</div>
+      <h2>Moments from {html.escape(day.theme)}</h2>
     </section>
 
     <section class="gallery-grid">
