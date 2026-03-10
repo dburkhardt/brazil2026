@@ -87,20 +87,69 @@ MIN_GALLERY_IMAGES = {
     6: 4,
 }
 
-DAY_HOTEL_IMAGE_ORDER = {
-    1: [0, 1, 2, 3],
-    2: [1, 2, 0],
-    3: [0, 3, 1],
-    4: [2, 1],
-    5: [2, 0, 1],
-    6: [3, 0, 1],
-}
-
 DAY_ORIGINAL_CAPTION_EXCLUDES = {
     4: {"Arraial do Cabo coast", "Clear-water cove"},
 }
 
 DAY_FEATURED_IMAGES = {
+    1: [
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Ipanema_Beach_Rio.jpg",
+            "Ipanema shoreline",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Ipanema_beach_02.jpg",
+            "Two Brothers from Ipanema",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Arpoador_Rio_de_Janeiro.jpg",
+            "Arpoador overlook",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Arpoador_-_Rio_de_Janeiro.jpg",
+            "Arpoador rocks",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Praia_do_Arpoador_-_Rio_de_Janeiro_%2815309117045%29.jpg",
+            "Praia do Arpoador",
+        ),
+    ],
+    2: [
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Jardim_botanico_04.jpg",
+            "Jardim Botanico lagoon",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Lagoa_Rodrigo_de_Freitas.jpg",
+            "Lagoa Rodrigo de Freitas",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Jardim_Bot%C3%A2nico_do_Rio_de_Janeiro_%283903220511%29.jpg",
+            "Jardim Botanico palms",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Lagoa_Rodrigo_de_Freitas_e_o_Cristo_Redentor_%283262291593%29.jpg",
+            "Lagoa with Christ the Redeemer",
+        ),
+    ],
+    3: [
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Rio_de_Janeiro_Tijuca_Forest_(1).jpg",
+            "Tijuca canopy",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Rio_de_Janeiro_Tijuca_Forest_(3).jpg",
+            "Tijuca interior trail",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Cascatinha_Taunay.jpg",
+            "Cascatinha Taunay",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Parque_Nacional_da_Tijuca_-_Waterfall_%22Das_Almas%22_-_panoramio.jpg",
+            "Waterfall in Tijuca",
+        ),
+    ],
     4: [
         (
             "https://commons.wikimedia.org/wiki/Special:FilePath/Vista_Arraial_do_Cabo.jpg",
@@ -123,33 +172,53 @@ DAY_FEATURED_IMAGES = {
             "Prainha shoreline",
         ),
     ],
+    5: [
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Sugarloaf_Mountain,_Rio_de_Janeiro,_Brazil.jpg",
+            "Sugarloaf from Guanabara Bay",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Sugarloaf_Cable_Car,_Rio_de_Janeiro,_Brazil_24.jpg",
+            "Sugarloaf cable car",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Arcos_da_Lapa.jpg",
+            "Arcos da Lapa",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Sugarloaf_Cable_Car%2C_Rio_de_Janeiro%2C_Brazil.jpg",
+            "Cable car above Rio",
+        ),
+    ],
+    6: [
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Sunrise_at_Ipanema_Beach.jpeg",
+            "Sunrise at Ipanema",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Dawn_in_Rio_de_Janeiro%2C_seen_from_%22Mirante_Dona_Marta%22.JPG",
+            "Dawn over Rio",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Copacabana_Beach_Rio_de_Janeiro_at_Dawn_2009-04.JPG",
+            "Copacabana at dawn",
+        ),
+        (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Mirante_Dona_Marta.jpg",
+            "View from Mirante Dona Marta",
+        ),
+    ],
 }
-
-
-def extract_hotel_images(text: str) -> list[tuple[str, str]]:
-    block_match = re.search(r'<div class="photo-grid">(.*?)</div>\s*<div class="bonvoy-strip">', text, re.S)
-    if not block_match:
-        return []
-
-    return [
-        (src, html.unescape(caption).strip())
-        for src, caption in re.findall(
-            r'<img src="([^"]+)" alt="[^"]+">\s*<div class="caption">(.*?)</div>',
-            block_match.group(1),
-            re.S,
-        )
-    ]
 
 
 def merge_images(
     image_pairs: list[tuple[str, str]],
-    extras: list[tuple[str, str]],
     minimum: int,
 ) -> tuple[list[str], list[str]]:
     merged: list[tuple[str, str]] = []
     seen: set[str] = set()
 
-    for src, caption in [*image_pairs, *extras]:
+    for src, caption in image_pairs:
         if src in seen:
             continue
         seen.add(src)
@@ -188,7 +257,6 @@ def flight_rows(options: list[FlightOption]) -> str:
 
 
 def extract_days(text: str) -> list[DayPlan]:
-    hotel_images = extract_hotel_images(text)
     blocks = re.findall(
         r"<!-- Day (\d+) -->(.*?)(?=(?:<!-- Day \d+ -->|</div>\s*<div class=\"scroll-hint\">))",
         text,
@@ -216,15 +284,15 @@ def extract_days(text: str) -> list[DayPlan]:
         if excluded_captions:
             original_pairs = [(src, caption) for src, caption in original_pairs if caption not in excluded_captions]
 
-        image_pairs = [*DAY_FEATURED_IMAGES.get(number, []), *original_pairs]
-        extra_pairs: list[tuple[str, str]] = []
-        for hotel_index in DAY_HOTEL_IMAGE_ORDER.get(number, []):
-            if hotel_index < len(hotel_images):
-                extra_pairs.append(hotel_images[hotel_index])
+        featured_pairs = DAY_FEATURED_IMAGES.get(number, [])
+        minimum = MIN_GALLERY_IMAGES.get(number, len(image_matches))
+        if len(featured_pairs) >= minimum:
+            image_pairs = featured_pairs
+        else:
+            image_pairs = [*featured_pairs, *original_pairs]
         images, captions = merge_images(
             image_pairs,
-            extra_pairs,
-            MIN_GALLERY_IMAGES.get(number, len(image_pairs)),
+            minimum,
         )
 
         days.append(
