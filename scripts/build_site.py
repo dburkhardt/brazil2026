@@ -123,8 +123,8 @@ def render_index(days: list[DayPlan]) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Rio 2026</title>
-  <meta name="description" content="Rio de Janeiro trip plan for April 17 to 22, 2026.">
+  <title>Rio de Janeiro · April 2026</title>
+  <meta name="description" content="Rio de Janeiro, April 17 to 22, 2026.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
@@ -142,10 +142,10 @@ def render_index(days: list[DayPlan]) -> str:
       <div class="hero-copy">
         <div class="eyebrow">Rio de Janeiro · Apr 17-22, 2026</div>
         <h1>Rio, coast to forest.</h1>
-        <p>Sheraton mornings, Ipanema sunsets, Tijuca trails, Arraial do Cabo water, and a final sunrise before heading home.</p>
+        <p>Beach light, rainforest air, clear water in Arraial do Cabo, and slow evenings back in the city.</p>
         <div class="hero-actions">
-          <a href="{days[0].filename}" class="btn-primary">Start with day 1</a>
-          <a href="#days" class="btn-secondary">See the week</a>
+          <a href="{days[0].filename}" class="btn-primary">Begin</a>
+          <a href="#days" class="btn-secondary">Itinerary</a>
         </div>
       </div>
       <div class="hero-panel">
@@ -154,9 +154,9 @@ def render_index(days: list[DayPlan]) -> str:
     </section>
 
     <section class="section-head reveal" id="days">
-      <div class="eyebrow">The Week</div>
-      <h2>Six days, one Rio trip</h2>
-      <p>Arrival by the beach, gardens and lagoa, a full rainforest day, Arraial do Cabo, classic city views, and one last early morning.</p>
+      <div class="eyebrow">April 17-22</div>
+      <h2>Arrival to last light</h2>
+      <p>Ipanema, Jardim Botanico, Tijuca, Arraial do Cabo, Sugarloaf, Lapa, and one last sunrise.</p>
     </section>
 
     <section class="excursion-grid">
@@ -189,7 +189,7 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{html.escape(day.theme)} · Rio 2026</title>
+  <title>{html.escape(day.theme)} · Rio de Janeiro</title>
   <meta name="description" content="{html.escape(day.summary)}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -210,8 +210,8 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
         <h1>{html.escape(day.theme)}</h1>
         <p>{html.escape(day.summary)}</p>
         <div class="hero-actions">
-          <a href="#plan" class="btn-primary">Highlights</a>
-          <a href="#gallery" class="btn-secondary">Photos</a>
+          <a href="#plan" class="btn-primary">Plan</a>
+          <a href="#gallery" class="btn-secondary">Gallery</a>
         </div>
       </div>
       <div class="hero-panel">
@@ -221,8 +221,8 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
 
     <section class="content-grid">
       <article class="detail-card reveal" id="plan">
-        <div class="eyebrow">Highlights</div>
-        <h2>The flow of the day</h2>
+        <div class="eyebrow">Plan</div>
+        <h2>Morning to night</h2>
         <ul class="detail-list">
           {bullet_items}
         </ul>
@@ -233,7 +233,7 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
         <h2>{html.escape(day.label)}</h2>
         <p>{html.escape(day.summary)}</p>
         <div class="stat-row">
-          <span class="stat-label">Moments</span>
+          <span class="stat-label">Scenes</span>
           <strong>{len(day.images)} scene{'s' if len(day.images) != 1 else ''}</strong>
         </div>
         <div class="stat-row">
@@ -245,7 +245,7 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
 
     <section class="section-head reveal" id="gallery">
       <div class="eyebrow">{html.escape(day.label)}</div>
-      <h2>Moments from {html.escape(day.theme)}</h2>
+      <h2>{html.escape(day.theme)}</h2>
     </section>
 
     <section class="gallery-grid">
@@ -254,7 +254,7 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
 
     <section class="pager">
       {prev_link}
-      <a href="index.html" class="pager-link">All days</a>
+      <a href="index.html" class="pager-link">Rio</a>
       {next_link}
     </section>
   </main>
