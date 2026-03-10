@@ -9,6 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "slides.html"
 STYLESHEET = "styles.css"
+SITE_URL = "https://dburkhardt.github.io/brazil2026"
+SOCIAL_IMAGE_URL = f"{SITE_URL}/social-share.jpg"
 FAVICON_HREF = (
     "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 "
     "viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E"
@@ -164,16 +166,21 @@ def flight_rows(options: list[FlightOption]) -> str:
     rows = []
     for option in options:
         row_class = ' class="featured"' if option.featured else ""
-        airline = f"<strong>{html.escape(option.airline)}</strong>" if option.featured else html.escape(option.airline)
+        badge = '<span class="flight-badge">Top pick</span>' if option.featured else ""
         rows.append(
             f"""
           <tr{row_class}>
-            <td>{airline}</td>
-            <td>{html.escape(option.route)}</td>
+            <td>
+              <div class="flight-airline">
+                <strong>{html.escape(option.airline)}</strong>
+                {badge}
+              </div>
+            </td>
+            <td><span class="flight-route">{html.escape(option.route)}</span></td>
             <td><span class="flight-date">{html.escape(option.depart_date)}</span><span class="flight-time">{html.escape(option.depart_time)}</span></td>
             <td><span class="flight-date">{html.escape(option.arrive_date)}</span><span class="flight-time">{html.escape(option.arrive_time)}</span></td>
-            <td>{html.escape(option.duration)}</td>
-            <td>{html.escape(option.points)}</td>
+            <td><span class="flight-duration">{html.escape(option.duration)}</span></td>
+            <td><span class="flight-points">{html.escape(option.points)}</span></td>
           </tr>
 """
         )
@@ -248,6 +255,26 @@ def nav_links(days: list[DayPlan], current_page: str | None = None) -> str:
     return "\n".join(links)
 
 
+def social_meta(title: str, description: str, path: str = "") -> str:
+    page_url = f"{SITE_URL}/{path}" if path else f"{SITE_URL}/"
+    escaped_title = html.escape(title)
+    escaped_description = html.escape(description)
+    return f"""
+  <link rel="canonical" href="{page_url}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{page_url}">
+  <meta property="og:title" content="{escaped_title}">
+  <meta property="og:description" content="{escaped_description}">
+  <meta property="og:image" content="{SOCIAL_IMAGE_URL}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Rio de Janeiro beach and mountains">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{escaped_title}">
+  <meta name="twitter:description" content="{escaped_description}">
+  <meta name="twitter:image" content="{SOCIAL_IMAGE_URL}">"""
+
+
 def render_index(days: list[DayPlan]) -> str:
     cards = []
     for day in days:
@@ -280,6 +307,7 @@ def render_index(days: list[DayPlan]) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Rio de Janeiro · April 2026</title>
   <meta name="description" content="Rio de Janeiro, April 17 to 22, 2026.">
+  {social_meta("Rio de Janeiro · April 2026", "Rio de Janeiro, April 17 to 22, 2026.")}
   <link rel="icon" href="{FAVICON_HREF}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -347,6 +375,7 @@ def render_day(days: list[DayPlan], day: DayPlan) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(day.theme)} · Rio de Janeiro</title>
   <meta name="description" content="{html.escape(day.summary)}">
+  {social_meta(f"{day.theme} · Rio de Janeiro", day.summary, day.filename)}
   <link rel="icon" href="{FAVICON_HREF}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -432,6 +461,7 @@ def render_logistics(days: list[DayPlan]) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Logistics · Rio de Janeiro</title>
   <meta name="description" content="Flights to and from Rio de Janeiro for April 2026.">
+  {social_meta("Logistics · Rio de Janeiro", "Flights to and from Rio de Janeiro for April 2026.", "logistics.html")}
   <link rel="icon" href="{FAVICON_HREF}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

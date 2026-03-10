@@ -321,20 +321,21 @@ p {
 
 .table-wrap {
   overflow-x: auto;
+  margin-top: 14px;
+  padding-bottom: 4px;
 }
 
 .flight-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 14px;
-  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  min-width: 820px;
 }
 
 .flight-table th,
 .flight-table td {
-  padding: 14px 12px;
+  padding: 16px 14px;
   text-align: left;
-  border-bottom: 1px solid rgba(13, 43, 78, 0.08);
   vertical-align: top;
 }
 
@@ -343,14 +344,84 @@ p {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(20, 33, 54, 0.56);
+  padding-top: 0;
+  padding-bottom: 8px;
 }
 
 .flight-table td {
   font-size: 0.95rem;
+  background: rgba(247, 251, 252, 0.95);
+  border-top: 1px solid rgba(13, 43, 78, 0.06);
+  border-bottom: 1px solid rgba(13, 43, 78, 0.08);
 }
 
-.flight-table tr.featured td {
-  background: rgba(14, 116, 144, 0.08);
+.flight-table tbody td:first-child {
+  border-left: 1px solid rgba(13, 43, 78, 0.08);
+  border-top-left-radius: 18px;
+  border-bottom-left-radius: 18px;
+}
+
+.flight-table tbody td:last-child {
+  border-right: 1px solid rgba(13, 43, 78, 0.08);
+  border-top-right-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+
+.flight-table tbody tr.featured td {
+  background: linear-gradient(180deg, rgba(14, 116, 144, 0.12), rgba(158, 231, 242, 0.18));
+  border-top-color: rgba(14, 116, 144, 0.2);
+  border-bottom-color: rgba(14, 116, 144, 0.22);
+}
+
+.flight-table tbody tr.featured td:first-child {
+  border-left-color: rgba(14, 116, 144, 0.24);
+}
+
+.flight-table tbody tr.featured td:last-child {
+  border-right-color: rgba(14, 116, 144, 0.24);
+}
+
+.flight-airline {
+  display: grid;
+  gap: 8px;
+}
+
+.flight-airline strong,
+.flight-route,
+.flight-points,
+.flight-duration {
+  color: var(--navy);
+}
+
+.flight-airline strong {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.flight-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--navy);
+  color: var(--white);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.flight-route {
+  display: block;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.flight-duration,
+.flight-points {
+  display: block;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .flight-date,
